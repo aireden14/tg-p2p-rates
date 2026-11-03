@@ -58,8 +58,17 @@ def start_hosting_helpers():
         log("Самопинг включён")
 
 
+def selfcheck_only():
+    """SELFCHECK_ONLY=1: только проверить Bybit с этого хостинга и ждать (Telegram не трогаем)."""
+    check_bybit(BybitClient(), log)
+    while True:
+        time.sleep(3600)
+
+
 def main():
     start_hosting_helpers()
+    if os.environ.get("SELFCHECK_ONLY"):
+        selfcheck_only()
     api = TelegramApi(wait_for_token())
     client = BybitClient()
     bot = Bot(api, Service(client), Store(ROOT / "state.json"))

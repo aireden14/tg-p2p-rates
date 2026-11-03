@@ -121,6 +121,12 @@ def _http_post(body, timeout=15):
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return json.load(resp)
+    except urllib.error.HTTPError as exc:
+        try:
+            snippet = exc.read(120).decode("utf-8", "replace").replace("\n", " ").strip()
+        except (OSError, ValueError):
+            snippet = ""
+        raise BybitError(f"Bybit недоступен: HTTP {exc.code} {snippet}".strip()) from exc
     except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
         raise BybitError(f"Bybit недоступен: {type(exc).__name__}") from exc
 
