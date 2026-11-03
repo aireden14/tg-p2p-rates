@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#B9FCE8"/>
+      <stop offset="0.55" stop-color="#3FD6B8"/>
+      <stop offset="1" stop-color="#0E9F92"/>
+    </linearGradient>
+    <radialGradient id="gloss" cx="0.3" cy="0.2" r="0.8">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="coinA" cx="0.35" cy="0.3" r="0.9">
+      <stop offset="0" stop-color="#5BF0C2"/>
+      <stop offset="1" stop-color="#0F8F6B"/>
+    </radialGradient>
+    <radialGradient id="coinB" cx="0.35" cy="0.3" r="0.9">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#CFFBEF"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="22" stdDeviation="20" flood-color="#05584A" flood-opacity="0.38"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <ellipse cx="330" cy="230" rx="520" ry="300" transform="rotate(-24 330 230)" fill="url(#gloss)"/>
+
+  <!-- стрелки обмена -->
+  <g fill="none" stroke="#FFFFFF" stroke-opacity="0.92" stroke-width="44" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 192.5 395.7 A 340 340 0 0 1 730.5 251.6"/>
+    <path d="M 831.5 628.3 A 340 340 0 0 1 293.4 772.4"/>
+  </g>
+  <g fill="#FFFFFF" fill-opacity="0.92" stroke="#FFFFFF" stroke-opacity="0.92" stroke-width="14" stroke-linejoin="round">
+    <polygon points="784.1,296.6 770.4,204.1 690.6,299.1"/>
+    <polygon points="239.8,727.4 253.5,819.9 333.3,724.9"/>
+  </g>
+
+  <!-- монета USDT -->
+  <g filter="url(#shadow)">
+    <circle cx="420" cy="440" r="165" fill="url(#coinA)" stroke="#FFFFFF" stroke-width="16"/>
+    <circle cx="420" cy="440" r="136" fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="6"/>
+  </g>
+  <g fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round">
+    <path d="M 345 388 H 495"/>
+    <path d="M 420 388 V 522"/>
+    <path d="M 372 460 H 468" stroke-width="28"/>
+  </g>
+
+  <!-- монета рубль -->
+  <g filter="url(#shadow)">
+    <circle cx="604" cy="584" r="165" fill="url(#coinB)" stroke="#FFFFFF" stroke-width="16"/>
+    <circle cx="604" cy="584" r="136" fill="none" stroke="#12A58F" stroke-opacity="0.25" stroke-width="6"/>
+  </g>
+  <g fill="none" stroke="#0E9F8E" stroke-width="32" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 581 652 V 520 H 626 A 39 39 0 0 1 626 598 H 581"/>
+    <path d="M 548 616 H 642" stroke-width="28"/>
+  </g>
+
+  <!-- искорки -->
+  <g fill="#FFFFFF" fill-opacity="0.95">
+    <path d="M 236 226 L 246 252 L 272 262 L 246 272 L 236 298 L 226 272 L 200 262 L 226 252 Z"/>
+    <path d="M 792 792 L 799 810 L 817 817 L 799 824 L 792 842 L 785 824 L 767 817 L 785 810 Z"/>
+  </g>
+</svg>
