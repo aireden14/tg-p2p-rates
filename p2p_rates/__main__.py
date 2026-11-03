@@ -8,6 +8,7 @@ from pathlib import Path
 from .bot import ApiError, Bot, Service, Store, TelegramApi
 from .bybit import BybitClient
 from .keepalive import start_health_server, start_self_ping
+from .selfcheck import check_bybit, check_telegram
 
 ROOT = Path(__file__).resolve().parent.parent
 COMMANDS = [
@@ -60,7 +61,10 @@ def start_hosting_helpers():
 def main():
     start_hosting_helpers()
     api = TelegramApi(wait_for_token())
-    bot = Bot(api, Service(BybitClient()), Store(ROOT / "state.json"))
+    client = BybitClient()
+    bot = Bot(api, Service(client), Store(ROOT / "state.json"))
+    check_telegram(api, log)
+    check_bybit(client, log)
     try:
         api.call("setMyCommands", commands=COMMANDS)
     except ApiError as exc:
