@@ -33,14 +33,15 @@ def fmt_rub(value):
     return fmt_int(value) if abs(value) >= 1000 else f"{value:.2f}".replace(".", ",")
 
 
-def render_estimate(amount, est, google, buy_markup, sell_markup, now=None):
+def render_estimate(amount, est, google, buy_markup, sell_markup, now=None, premium_pct=0.0):
     """Сумма -> два варианта: эта сумма в рублях -> USDT и такая же сумма USDT -> рубли."""
+    tail = f", затем {fmt_pct(premium_pct)}" if round(premium_pct, 1) != 0 else ""
     if buy_markup == sell_markup:
         rate = (f"Курс: <b>{fmt_price(est.buy_price)} ₽</b> за 1 USDT "
-                f"(Google {fmt_price(google)} ₽ {fmt_signed(buy_markup)} ₽)")
+                f"(Google {fmt_price(google)} ₽ {fmt_signed(buy_markup)} ₽{tail})")
     else:
         rate = (f"Курс за 1 USDT: покупка <b>{fmt_price(est.buy_price)} ₽</b>, продажа <b>{fmt_price(est.sell_price)} ₽</b> "
-                f"(Google {fmt_price(google)} ₽ {fmt_signed(buy_markup)} / {fmt_signed(sell_markup)} ₽)")
+                f"(Google {fmt_price(google)} ₽ {fmt_signed(buy_markup)} / {fmt_signed(sell_markup)} ₽{tail})")
     stamp = (now or datetime.now()).strftime("%H:%M:%S")
     return "\n\n".join([
         "💱 <b>USDT ⇄ рубли</b> · оценка P2P\n" + rate,
