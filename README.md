@@ -45,3 +45,10 @@ SELFCHECK_ONLY=1 python3 -m p2p_rates          # только проверить
 Ставится и описание, и фото через Bot API без BotFather: `setMyProfilePhoto` (multipart, `photo={"type":"static","photo":"attach://f"}`),
 `setMyShortDescription` (до 120 символов), `setMyDescription` (до 512). Осторожно: вызов `setMyDescription` без параметров
 сбрасывает описание в пустое. PNG из SVG делался через Chrome headless (`--screenshot`, окно 1024 на 1200, обрезка до 1024).
+
+## Подпись «Bybit P2P» и реферальная ссылка (с 04.11.2026)
+В сообщении формула не показывается: курс подписан «(Bybit P2P)», и это ссылка. Ссылка берётся из переменной `BYBIT_REF_URL`
+(только `https://`), иначе из `DEFAULT_REF_URL` в `p2p_rates/ref.py`. Сейчас там временная партнёрская ссылка Bybit с кодом 50394
+(`https://partner.bybit.com/b/50394`): код найден в интернете, принадлежит стороннему партнёру, не владельцу бота. Заменить на свою:
+Bybit, раздел Referral Program, скопировать ссылку и задать её как `BYBIT_REF_URL` на Render (затем ручной деплой).
+Внизу сообщения остаётся пометка «Оценка, не живые объявления».
