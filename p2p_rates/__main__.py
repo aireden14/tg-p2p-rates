@@ -8,7 +8,8 @@ from pathlib import Path
 from .bot import ApiError, Bot, Service, Store, TelegramApi
 from .bybit import BybitClient
 from .keepalive import start_health_server, start_self_ping
-from .selfcheck import check_bybit, check_telegram
+from .google import GoogleRate
+from .selfcheck import check_bybit, check_google, check_telegram
 
 ROOT = Path(__file__).resolve().parent.parent
 COMMANDS = [
@@ -70,10 +71,11 @@ def main():
     if os.environ.get("SELFCHECK_ONLY"):
         selfcheck_only()
     api = TelegramApi(wait_for_token())
-    client = BybitClient()
-    bot = Bot(api, Service(client), Store(ROOT / "state.json"))
+    client, google = BybitClient(), GoogleRate()
+    bot = Bot(api, Service(client), Store(ROOT / "state.json"), google=google)
     check_telegram(api, log)
     check_bybit(client, log)
+    check_google(google, log)
     try:
         api.call("setMyCommands", commands=COMMANDS)
     except ApiError as exc:

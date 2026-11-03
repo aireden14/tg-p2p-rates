@@ -20,6 +20,15 @@ def check_bybit(client, log):
     return True
 
 
+def check_google(google, log):
+    value = google.usd_rub()
+    if value is None:
+        log("Google: недоступен, сравнение с ним в сообщениях пропускается")
+        return False
+    log(f"Google: ok, 1 USD = {fmt_price(value)} ₽")
+    return True
+
+
 def check_telegram(api, log):
     try:
         me = api.call("getMe")

@@ -109,8 +109,8 @@ def keyboard(settings):
 
 
 class Bot:
-    def __init__(self, api, service, store):
-        self.api, self.service, self.store = api, service, store
+    def __init__(self, api, service, store, google=None):
+        self.api, self.service, self.store, self.google = api, service, store, google
 
     def _compose(self, chat_id):
         s = self.store.get(chat_id)
@@ -119,7 +119,8 @@ class Bot:
             sell = self.service.quote(SELL, s["amount"], s["bank_only"]) if s["direction"] in ("sell", "both") else None
         except BybitError:
             return BYBIT_DOWN, keyboard(s)
-        return render(s["amount"], s["direction"], buy, sell, s["bank_only"]), keyboard(s)
+        google = self.google.usd_rub() if self.google else None
+        return render(s["amount"], s["direction"], buy, sell, s["bank_only"], google=google), keyboard(s)
 
     def _send_rates(self, chat_id):
         text, markup = self._compose(chat_id)
