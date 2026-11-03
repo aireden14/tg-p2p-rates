@@ -40,7 +40,7 @@ class ParseAmountTests(unittest.TestCase):
                 self.assertEqual(parse_amount(text), want)
 
     def test_rejects(self):
-        for text in ["", "привет", "abc 12", "0", "-5000", "100", "999999999"]:
+        for text in ["", "привет", "abc 12", "0", "-5000", "2000000000"]:
             with self.subTest(text):
                 self.assertIsNone(parse_amount(text))
 

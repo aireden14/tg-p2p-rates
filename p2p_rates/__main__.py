@@ -5,11 +5,11 @@ import time
 import traceback
 from pathlib import Path
 
-from .bot import ApiError, Bot, Service, Store, TelegramApi
-from .bybit import BybitClient
-from .keepalive import start_health_server, start_self_ping
+from .bot import ApiError, Bot, Store, TelegramApi
 from .google import GoogleRate
-from .selfcheck import check_bybit, check_google, check_telegram
+from .keepalive import start_health_server, start_self_ping
+from .rates import load_markups
+from .selfcheck import check_google, check_telegram
 
 ROOT = Path(__file__).resolve().parent.parent
 COMMANDS = [
@@ -60,8 +60,8 @@ def start_hosting_helpers():
 
 
 def selfcheck_only():
-    """SELFCHECK_ONLY=1: только проверить Bybit с этого хостинга и ждать (Telegram не трогаем)."""
-    check_bybit(BybitClient(), log)
+    """SELFCHECK_ONLY=1: только проверить Google с этого хостинга и ждать (Telegram не трогаем)."""
+    check_google(GoogleRate(), log)
     while True:
         time.sleep(3600)
 
@@ -71,11 +71,12 @@ def main():
     if os.environ.get("SELFCHECK_ONLY"):
         selfcheck_only()
     api = TelegramApi(wait_for_token())
-    client, google = BybitClient(), GoogleRate()
-    bot = Bot(api, Service(client), Store(ROOT / "state.json"), google=google)
+    google = GoogleRate()
+    buy_markup, sell_markup = load_markups()
+    bot = Bot(api, google, Store(ROOT / "state.json"), buy_markup=buy_markup, sell_markup=sell_markup)
     check_telegram(api, log)
-    check_bybit(client, log)
     check_google(google, log)
+    log(f"Надбавка к Google, ₽: покупка {buy_markup:+.2f}, продажа {sell_markup:+.2f}")
     try:
         api.call("setMyCommands", commands=COMMANDS)
     except ApiError as exc:

@@ -3,8 +3,8 @@ import html
 import re
 from datetime import datetime
 
-MIN_AMOUNT = 500          # меньше Bybit не принимает
-MAX_AMOUNT = 3_500_000    # верхний лимит Bybit по рублям
+MIN_AMOUNT = 1                  # сумму читаем и как рубли, и как USDT
+MAX_AMOUNT = 1_000_000_000      # больше миллиарда - скорее опечатка
 
 _AMOUNT_RE = re.compile(
     r"([0-9][0-9\s ]*(?:[.,][0-9]+)?)\s*(тыс\.?|млн|k|к|m|м)?\s*(?:₽|руб\.?|р\.?|rub)?",
@@ -23,6 +23,36 @@ def fmt_price(value):
 
 def fmt_usdt(value):
     return f"{value:,.2f}".replace(",", " ").replace(".", ",")
+
+
+def fmt_signed(value):
+    return f"{value:+.2f}".replace(".", ",")
+
+
+def fmt_rub(value):
+    return fmt_int(value) if abs(value) >= 1000 else f"{value:.2f}".replace(".", ",")
+
+
+def render_estimate(amount, est, google, buy_markup, sell_markup, now=None):
+    """Сумма -> два варианта: эта сумма в рублях -> USDT и такая же сумма USDT -> рубли."""
+    if buy_markup == sell_markup:
+        rate = (f"Курс: <b>{fmt_price(est.buy_price)} ₽</b> за 1 USDT "
+                f"(Google {fmt_price(google)} ₽ {fmt_signed(buy_markup)} ₽)")
+    else:
+        rate = (f"Курс за 1 USDT: покупка <b>{fmt_price(est.buy_price)} ₽</b>, продажа <b>{fmt_price(est.sell_price)} ₽</b> "
+                f"(Google {fmt_price(google)} ₽ {fmt_signed(buy_markup)} / {fmt_signed(sell_markup)} ₽)")
+    stamp = (now or datetime.now()).strftime("%H:%M:%S")
+    return "\n\n".join([
+        "💱 <b>USDT ⇄ рубли</b> · оценка P2P\n" + rate,
+        f"🟢 <b>{fmt_int(amount)} ₽ → USDT</b>\nполучите ≈ <b>{fmt_usdt(est.usdt_for_rub)} USDT</b>",
+        f"🔴 <b>{fmt_int(amount)} USDT → ₽</b>\nполучите ≈ <b>{fmt_rub(est.rub_for_usdt)} ₽</b>",
+        f"<i>Это оценка по формуле «Google + надбавка», живые объявления не смотрим. "
+        f"Обновлено {stamp}. Пришлите другую сумму - пересчитаю.</i>",
+    ])
+
+
+def render_unavailable():
+    return "⚠️ Курс Google сейчас недоступен, оценку посчитать не могу. Попробуйте через минуту."
 
 
 def fmt_pct(value):

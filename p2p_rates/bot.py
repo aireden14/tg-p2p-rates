@@ -1,23 +1,20 @@
-"""Telegram-бот: клавиатура, настройки чата, кэш курса."""
+"""Telegram-бот: пишешь сумму - получаешь два варианта обмена по формуле «Google + надбавка»."""
 import json
 import os
 import tempfile
-import time
 import urllib.error
 import urllib.request
 from pathlib import Path
 
-from .bybit import BUY, SELL, BybitError
-from .format import fmt_int, parse_amount, render
+from .format import fmt_int, parse_amount, render_estimate, render_unavailable
+from .rates import DEFAULT_MARKUP_RUB, estimate
 
-DEFAULTS = {"amount": 50000, "direction": "both", "bank_only": False}
-AMOUNT_PRESETS = (10_000, 50_000, 100_000, 500_000)
-DIRECTIONS = ("buy", "sell", "both")
+DEFAULTS = {"amount": 50000}
+AMOUNT_PRESETS = (10_000, 50_000, 100_000, 500_000, 1_000_000)
 HINT = (
-    "Пришлите сумму в рублях (например <b>75000</b>, <b>50к</b> или <b>2 млн</b>) - "
-    "покажу актуальный P2P-курс USDT. Кнопка /start открывает панель."
+    "Пришлите сумму (например <b>50000</b>, <b>50к</b> или <b>2 млн</b>) - покажу оба варианта: "
+    "эта сумма в рублях → USDT и такая же сумма в USDT → рубли. Кнопка /start открывает панель."
 )
-BYBIT_DOWN = "⚠️ Bybit сейчас не ответил. Попробуйте через минуту."
 
 
 class ApiError(Exception):
@@ -51,7 +48,7 @@ class TelegramApi:
 
 
 class Store:
-    """Настройки чатов в JSON; запись через временный файл + os.replace."""
+    """Последняя сумма каждого чата в JSON; запись через временный файл + os.replace."""
 
     def __init__(self, path):
         self.path = Path(path)
@@ -72,55 +69,28 @@ class Store:
         os.replace(tmp, self.path)
 
 
-class Service:
-    """Курс с коротким кэшем, чтобы кнопки не долбили Bybit."""
+def keyboard(amount):
+    def button(value):
+        return {"text": ("✓ " if amount == value else "") + fmt_int(value), "callback_data": f"amt:{value}"}
 
-    def __init__(self, client, ttl=20, clock=time.monotonic):
-        self._client, self._ttl, self._clock = client, ttl, clock
-        self._cache = {}
-
-    def quote(self, direction, amount, bank_only):
-        key = (direction, amount, bank_only)
-        hit = self._cache.get(key)
-        if hit and self._clock() - hit[0] < self._ttl:
-            return hit[1]
-        quote = self._client.quote(direction, amount, bank_only=bank_only)
-        self._cache[key] = (self._clock(), quote)
-        if len(self._cache) > 200:
-            self._cache = {k: v for k, v in self._cache.items() if self._clock() - v[0] < self._ttl}
-        return quote
-
-
-def keyboard(settings):
-    amount, direction, bank = settings["amount"], settings["direction"], settings["bank_only"]
-    amounts = [
-        {"text": ("✓ " if amount == a else "") + f"{fmt_int(a // 1000)} тыс", "callback_data": f"amt:{a}"}
-        for a in AMOUNT_PRESETS
-    ]
-    names = {"buy": "🟢 Купить", "sell": "🔴 Продать", "both": "⇅ Оба"}
-    dirs = [
-        {"text": ("✓ " if direction == d else "") + names[d], "callback_data": f"dir:{d}"} for d in DIRECTIONS
-    ]
-    tools = [
-        {"text": ("☑" if bank else "☐") + " Только банк", "callback_data": "bank"},
-        {"text": "🔄 Обновить", "callback_data": "refresh"},
-    ]
-    return {"inline_keyboard": [amounts, dirs, tools]}
+    first = [button(v) for v in AMOUNT_PRESETS[:3]]
+    second = [button(v) for v in AMOUNT_PRESETS[3:]] + [{"text": "🔄 Обновить", "callback_data": "refresh"}]
+    return {"inline_keyboard": [first, second]}
 
 
 class Bot:
-    def __init__(self, api, service, store, google=None):
-        self.api, self.service, self.store, self.google = api, service, store, google
+    def __init__(self, api, google, store, buy_markup=DEFAULT_MARKUP_RUB, sell_markup=DEFAULT_MARKUP_RUB):
+        self.api, self.google, self.store = api, google, store
+        self.buy_markup, self.sell_markup = buy_markup, sell_markup
 
     def _compose(self, chat_id):
-        s = self.store.get(chat_id)
-        try:
-            buy = self.service.quote(BUY, s["amount"], s["bank_only"]) if s["direction"] in ("buy", "both") else None
-            sell = self.service.quote(SELL, s["amount"], s["bank_only"]) if s["direction"] in ("sell", "both") else None
-        except BybitError:
-            return BYBIT_DOWN, keyboard(s)
-        google = self.google.usd_rub() if self.google else None
-        return render(s["amount"], s["direction"], buy, sell, s["bank_only"], google=google), keyboard(s)
+        amount = self.store.get(chat_id)["amount"]
+        rate = self.google.usd_rub()
+        markup = keyboard(amount)
+        if rate is None:
+            return render_unavailable(), markup
+        est = estimate(amount, rate, self.buy_markup, self.sell_markup)
+        return render_estimate(amount, est, rate, self.buy_markup, self.sell_markup), markup
 
     def _send_rates(self, chat_id):
         text, markup = self._compose(chat_id)
@@ -157,10 +127,6 @@ class Bot:
         kind, _, value = data.partition(":")
         if kind == "amt" and value.isdigit() and int(value) in AMOUNT_PRESETS:
             self.store.update(chat_id, amount=int(value))
-        elif kind == "dir" and value in DIRECTIONS:
-            self.store.update(chat_id, direction=value)
-        elif data == "bank":
-            self.store.update(chat_id, bank_only=not self.store.get(chat_id)["bank_only"])
         elif data != "refresh":
             return
         text, markup = self._compose(chat_id)
