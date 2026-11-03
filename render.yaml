@@ -1,0 +1,15 @@
+# Справочно: так бот описан для Render (сервис создан через API, Blueprint не обязателен).
+services:
+  - type: web
+    name: tg-p2p-rates
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: echo "no dependencies"
+    startCommand: python3 -m p2p_rates
+    healthCheckPath: /health
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.12.7
