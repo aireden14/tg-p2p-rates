@@ -3,6 +3,8 @@ import html
 import re
 from datetime import datetime
 
+from .ref import safe_url
+
 MIN_AMOUNT = 1                  # сумму читаем и как рубли, и как USDT
 MAX_AMOUNT = 1_000_000_000      # больше миллиарда - скорее опечатка
 
@@ -33,22 +35,28 @@ def fmt_rub(value):
     return fmt_int(value) if abs(value) >= 1000 else f"{value:.2f}".replace(".", ",")
 
 
-def render_estimate(amount, est, google, buy_markup, sell_markup, now=None, premium_pct=0.0):
-    """Сумма -> два варианта: эта сумма в рублях -> USDT и такая же сумма USDT -> рубли."""
-    tail = f", затем {fmt_pct(premium_pct)}" if round(premium_pct, 1) != 0 else ""
+def _source_label(ref_url):
+    url = safe_url(ref_url)
+    return f'<a href="{html.escape(url, quote=True)}">Bybit P2P</a>' if url else "Bybit P2P"
+
+
+def render_estimate(amount, est, google, buy_markup, sell_markup, now=None, premium_pct=0.0, ref_url=None):
+    """Сумма -> два варианта: эта сумма в рублях -> USDT и такая же сумма USDT -> рубли.
+
+    Формула (Google, надбавка, процент) в тексте не показывается, подпись - «Bybit P2P» со ссылкой.
+    """
+    label = _source_label(ref_url)
     if buy_markup == sell_markup:
-        rate = (f"Курс: <b>{fmt_price(est.buy_price)} ₽</b> за 1 USDT "
-                f"(Google {fmt_price(google)} ₽ {fmt_signed(buy_markup)} ₽{tail})")
+        rate = f"Курс: <b>{fmt_price(est.buy_price)} ₽</b> за 1 USDT ({label})"
     else:
-        rate = (f"Курс за 1 USDT: покупка <b>{fmt_price(est.buy_price)} ₽</b>, продажа <b>{fmt_price(est.sell_price)} ₽</b> "
-                f"(Google {fmt_price(google)} ₽ {fmt_signed(buy_markup)} / {fmt_signed(sell_markup)} ₽{tail})")
+        rate = (f"Курс за 1 USDT: покупка <b>{fmt_price(est.buy_price)} ₽</b>, "
+                f"продажа <b>{fmt_price(est.sell_price)} ₽</b> ({label})")
     stamp = (now or datetime.now()).strftime("%H:%M:%S")
     return "\n\n".join([
         "💱 <b>USDT ⇄ рубли</b> · оценка P2P\n" + rate,
         f"🟢 <b>{fmt_int(amount)} ₽ → USDT</b>\nполучите ≈ <b>{fmt_usdt(est.usdt_for_rub)} USDT</b>",
         f"🔴 <b>{fmt_int(amount)} USDT → ₽</b>\nполучите ≈ <b>{fmt_rub(est.rub_for_usdt)} ₽</b>",
-        f"<i>Это оценка по формуле «Google + надбавка», живые объявления не смотрим. "
-        f"Обновлено {stamp}. Пришлите другую сумму - пересчитаю.</i>",
+        f"<i>Оценка, не живые объявления. Обновлено {stamp}. Пришлите другую сумму - пересчитаю.</i>",
     ])
 
 

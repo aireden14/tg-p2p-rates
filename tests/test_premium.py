@@ -47,13 +47,12 @@ class LoadPremiumTests(unittest.TestCase):
 
 
 class RenderPremiumTests(unittest.TestCase):
-    def test_formula_mentions_percent(self):
+    def test_percent_is_applied_but_not_shown(self):
         est = estimate(50_000, 81.5, 2.5, 2.5, premium_pct=1.5)
         text = render_estimate(50_000, est, 81.5, 2.5, 2.5, now=NOW, premium_pct=1.5)
         self.assertIn("85,26", text)
-        self.assertIn("Google 81,50", text)
-        self.assertIn("+2,50", text)
-        self.assertIn("+1,5 %", text)
+        self.assertNotIn("Google", text)
+        self.assertNotIn("%", text)
         self.assertIn("586,44 USDT", text)
         self.assertIn("4 263 000 ₽", text)
 
@@ -65,7 +64,7 @@ class RenderPremiumTests(unittest.TestCase):
     def test_different_markups_with_percent(self):
         est = estimate(10_000, 81.5, 3.0, 1.0, premium_pct=1.5)
         text = render_estimate(10_000, est, 81.5, 3.0, 1.0, now=NOW, premium_pct=1.5)
-        self.assertIn("+1,5 %", text)
+        self.assertNotIn("%", text)
         self.assertIn("85,77", text)  # 84.5 * 1.015 = 85.7675
         self.assertIn("83,74", text)  # 82.5 * 1.015 = 83.7375
 

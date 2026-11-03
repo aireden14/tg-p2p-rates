@@ -80,9 +80,10 @@ def keyboard(amount):
 
 class Bot:
     def __init__(self, api, google, store, buy_markup=DEFAULT_MARKUP_RUB, sell_markup=DEFAULT_MARKUP_RUB,
-                 premium_pct=0.0):
+                 premium_pct=0.0, ref_url=None):
         self.api, self.google, self.store = api, google, store
         self.buy_markup, self.sell_markup, self.premium_pct = buy_markup, sell_markup, premium_pct
+        self.ref_url = ref_url
 
     def _compose(self, chat_id):
         amount = self.store.get(chat_id)["amount"]
@@ -91,7 +92,8 @@ class Bot:
         if rate is None:
             return render_unavailable(), markup
         est = estimate(amount, rate, self.buy_markup, self.sell_markup, self.premium_pct)
-        text = render_estimate(amount, est, rate, self.buy_markup, self.sell_markup, premium_pct=self.premium_pct)
+        text = render_estimate(amount, est, rate, self.buy_markup, self.sell_markup,
+                               premium_pct=self.premium_pct, ref_url=self.ref_url)
         return text, markup
 
     def _send_rates(self, chat_id):

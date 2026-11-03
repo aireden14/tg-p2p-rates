@@ -28,19 +28,20 @@ class RenderEstimateTests(unittest.TestCase):
         self.assertIn("50 000 USDT → ₽", text)
         self.assertIn("4 200 000 ₽", text)
 
-    def test_formula_is_visible(self):
+    def test_formula_is_hidden_and_source_label_shown(self):
         text = render_estimate(50_000, estimate(50_000, 81.5, 2.5, 2.5), 81.5, 2.5, 2.5, now=NOW)
         self.assertIn("84,00", text)
-        self.assertIn("Google 81,50", text)
-        self.assertIn("+2,50", text)
+        self.assertIn("Bybit P2P", text)
+        self.assertNotIn("Google", text)
+        self.assertNotIn("+2,50", text)
         self.assertIn("Обновлено 19:55:01", text)
 
     def test_different_markups_show_both_prices(self):
         text = render_estimate(10_000, estimate(10_000, 81.5, 3.0, 1.0), 81.5, 3.0, 1.0, now=NOW)
         self.assertIn("84,50", text)
         self.assertIn("82,50", text)
-        self.assertIn("+3,00", text)
-        self.assertIn("+1,00", text)
+        self.assertNotIn("+3,00", text)
+        self.assertNotIn("Google", text)
 
     def test_no_long_dash_and_no_live_ads_claim(self):
         text = render_estimate(50_000, estimate(50_000, 81.5, 2.5, 2.5), 81.5, 2.5, 2.5, now=NOW)

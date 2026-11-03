@@ -9,6 +9,7 @@ from .bot import ApiError, Bot, Store, TelegramApi
 from .google import GoogleRate
 from .keepalive import start_health_server, start_self_ping
 from .rates import load_markups, load_premium
+from .ref import load_ref_url
 from .selfcheck import check_google, check_telegram
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -74,8 +75,10 @@ def main():
     google = GoogleRate()
     buy_markup, sell_markup = load_markups()
     premium_pct = load_premium()
+    ref_url = load_ref_url()
     bot = Bot(api, google, Store(ROOT / "state.json"), buy_markup=buy_markup, sell_markup=sell_markup,
-              premium_pct=premium_pct)
+              premium_pct=premium_pct, ref_url=ref_url)
+    log(f"Ссылка в подписи «Bybit P2P»: {ref_url}")
     check_telegram(api, log)
     check_google(google, log)
     log(f"Надбавка к Google, ₽: покупка {buy_markup:+.2f}, продажа {sell_markup:+.2f}; сверху {premium_pct:+.1f} %")
