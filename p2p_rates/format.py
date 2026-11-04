@@ -46,13 +46,8 @@ def render_estimate(amount, est, google, buy_markup, sell_markup, now=None, prem
     Формула (Google, надбавка, процент) в тексте не показывается, подпись - «Bybit P2P» со ссылкой.
     """
     label = _source_label(ref_url)
-    if buy_markup == sell_markup:
-        rate = f"Курс: <b>{fmt_price(est.buy_price)} ₽</b> за 1 USDT ({label})"
-    else:
-        rate = (f"Курс за 1 USDT: покупка <b>{fmt_price(est.buy_price)} ₽</b>, "
-                f"продажа <b>{fmt_price(est.sell_price)} ₽</b> ({label})")
     return "\n\n".join([
-        "💱 <b>USDT ⇄ рубли</b> · оценка P2P\n" + rate,
+        f"💱 <b>USDT ⇄ рубли</b> · оценка ({label})",
         f"🟢 <b>{fmt_int(amount)} ₽ → USDT</b>\nполучите ≈ <b>{fmt_usdt(est.usdt_for_rub)} USDT</b>",
         f"🔴 <b>{fmt_int(amount)} USDT → ₽</b>\nполучите ≈ <b>{fmt_rub(est.rub_for_usdt)} ₽</b>",
     ])

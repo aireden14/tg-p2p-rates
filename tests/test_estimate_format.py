@@ -30,7 +30,9 @@ class RenderEstimateTests(unittest.TestCase):
 
     def test_formula_is_hidden_and_source_label_shown(self):
         text = render_estimate(50_000, estimate(50_000, 81.5, 2.5, 2.5), 81.5, 2.5, 2.5, now=NOW)
-        self.assertIn("84,00", text)
+        self.assertNotIn("84,00", text)  # цена за 1 USDT не показывается
+        self.assertNotIn("Курс", text)
+        self.assertNotIn("за 1 USDT", text)
         self.assertIn("Bybit P2P", text)
         self.assertNotIn("Google", text)
         self.assertNotIn("+2,50", text)
@@ -38,8 +40,10 @@ class RenderEstimateTests(unittest.TestCase):
 
     def test_different_markups_show_both_prices(self):
         text = render_estimate(10_000, estimate(10_000, 81.5, 3.0, 1.0), 81.5, 3.0, 1.0, now=NOW)
-        self.assertIn("84,50", text)
-        self.assertIn("82,50", text)
+        self.assertNotIn("84,50", text)
+        self.assertNotIn("82,50", text)
+        self.assertIn("118,34 USDT", text)   # 10000 / 84.5
+        self.assertIn("825 000 ₽", text)     # 10000 * 82.5
         self.assertNotIn("+3,00", text)
         self.assertNotIn("Google", text)
 

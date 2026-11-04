@@ -71,7 +71,8 @@ class RenderRefTests(unittest.TestCase):
 
     def test_prices_unchanged(self):
         text = text_for(REF)
-        self.assertIn("85,26", text)
+        self.assertNotIn("85,26", text)  # строки «Курс: ... за 1 USDT» больше нет
+        self.assertNotIn("Курс", text)
         self.assertIn("586,44 USDT", text)
 
 

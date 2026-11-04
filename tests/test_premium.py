@@ -50,7 +50,7 @@ class RenderPremiumTests(unittest.TestCase):
     def test_percent_is_applied_but_not_shown(self):
         est = estimate(50_000, 81.5, 2.5, 2.5, premium_pct=1.5)
         text = render_estimate(50_000, est, 81.5, 2.5, 2.5, now=NOW, premium_pct=1.5)
-        self.assertIn("85,26", text)
+        self.assertNotIn("85,26", text)  # цена за 1 USDT не показывается
         self.assertNotIn("Google", text)
         self.assertNotIn("%", text)
         self.assertIn("586,44 USDT", text)
@@ -65,8 +65,9 @@ class RenderPremiumTests(unittest.TestCase):
         est = estimate(10_000, 81.5, 3.0, 1.0, premium_pct=1.5)
         text = render_estimate(10_000, est, 81.5, 3.0, 1.0, now=NOW, premium_pct=1.5)
         self.assertNotIn("%", text)
-        self.assertIn("85,77", text)  # 84.5 * 1.015 = 85.7675
-        self.assertIn("83,74", text)  # 82.5 * 1.015 = 83.7375
+        self.assertNotIn("85,77", text)
+        self.assertIn("116,59 USDT", text)   # 10000 / (84.5 * 1.015)
+        self.assertIn("837 375 ₽", text)     # 10000 * (82.5 * 1.015)
 
 
 class FakeGoogle:

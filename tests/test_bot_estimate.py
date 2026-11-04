@@ -105,9 +105,10 @@ class BotEstimateTests(unittest.TestCase):
         bot, api, _, _ = make_bot(buy=3.0, sell=1.0)
         bot.handle_update(message("10000"))
         text = api.last("sendMessage")["text"]
-        self.assertIn("84,50", text)
-        self.assertIn("82,50", text)
-        self.assertIn("825 000 ₽", text)  # 10000 * 82.5
+        self.assertNotIn("84,50", text)
+        self.assertNotIn("82,50", text)
+        self.assertIn("118,34 USDT", text)  # 10000 / 84.5
+        self.assertIn("825 000 ₽", text)    # 10000 * 82.5
 
     def test_google_unavailable_is_friendly(self):
         bot, api, _, _ = make_bot(google=FakeGoogle(None))
