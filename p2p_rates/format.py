@@ -51,12 +51,10 @@ def render_estimate(amount, est, google, buy_markup, sell_markup, now=None, prem
     else:
         rate = (f"Курс за 1 USDT: покупка <b>{fmt_price(est.buy_price)} ₽</b>, "
                 f"продажа <b>{fmt_price(est.sell_price)} ₽</b> ({label})")
-    stamp = (now or datetime.now()).strftime("%H:%M:%S")
     return "\n\n".join([
         "💱 <b>USDT ⇄ рубли</b> · оценка P2P\n" + rate,
         f"🟢 <b>{fmt_int(amount)} ₽ → USDT</b>\nполучите ≈ <b>{fmt_usdt(est.usdt_for_rub)} USDT</b>",
         f"🔴 <b>{fmt_int(amount)} USDT → ₽</b>\nполучите ≈ <b>{fmt_rub(est.rub_for_usdt)} ₽</b>",
-        f"<i>Оценка, не живые объявления. Обновлено {stamp}. Пришлите другую сумму - пересчитаю.</i>",
     ])
 
 

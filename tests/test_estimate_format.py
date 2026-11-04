@@ -34,7 +34,7 @@ class RenderEstimateTests(unittest.TestCase):
         self.assertIn("Bybit P2P", text)
         self.assertNotIn("Google", text)
         self.assertNotIn("+2,50", text)
-        self.assertIn("Обновлено 19:55:01", text)
+        self.assertNotIn("Обновлено", text)
 
     def test_different_markups_show_both_prices(self):
         text = render_estimate(10_000, estimate(10_000, 81.5, 3.0, 1.0), 81.5, 3.0, 1.0, now=NOW)

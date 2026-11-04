@@ -62,10 +62,12 @@ class RenderRefTests(unittest.TestCase):
         self.assertNotIn("+2,50", text)
         self.assertNotIn("%", text)
 
-    def test_footer_still_says_estimate(self):
+    def test_no_footer_signature(self):
         text = text_for(REF)
-        self.assertIn("Оценка", text)
-        self.assertIn("не живые объявления", text)
+        self.assertNotIn("не живые объявления", text)
+        self.assertNotIn("Обновлено", text)
+        self.assertNotIn("Пришлите другую сумму", text)
+        self.assertTrue(text.rstrip().endswith("₽</b>"))  # последним идёт блок «USDT → ₽»
 
     def test_prices_unchanged(self):
         text = text_for(REF)
